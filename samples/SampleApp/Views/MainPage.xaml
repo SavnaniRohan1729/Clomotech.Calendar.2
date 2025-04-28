@@ -49,66 +49,9 @@
     <ScrollView>
         <VerticalStackLayout HorizontalOptions="Fill" Spacing="6">
             <Button
-                Margin="30,30,30,0"
-                Clicked="DefaultCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Default Calendar" />
-
-            <Label Style="{StaticResource LabelMainPageStyle}" Text="Event Calendars" />
-            <Button
-                Clicked="SimpleCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Simple Event Calendar" />
-            <Button
-                Clicked="MultiSelectionCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="MultiSelection Event Calendar" />
-            <Button
-                Clicked="WeekendCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Weekend Calendar" />
-            <Button
-                Clicked="AdvancedCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Advanced Event Calendar" />
-            <Button
-                Clicked="RangeCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Range Event Calendar" />
-
-            <Label Style="{StaticResource LabelMainPageStyle}" Text="Calendars from Devices" />
-            <Button
-                Clicked="Windows11Calendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Windows 11 Calendar" />
-            <Button
-                Clicked="XiaomiCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Xiaomi Calendar (todo)" />
-
-            <Label Style="{StaticResource LabelMainPageStyle}" Text="Picker Popup" />
-            <Button
                 Clicked="PickerPopup"
                 Style="{StaticResource ButtonMainPageStyle}"
-                Text="Single Select Calendar" />
-            <Button
-                Clicked="RangePickerPopup"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Range Selection Calendar" />
-            <Button
-                Clicked="RangeStartEndDatePickerPopup"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Range Start-End Selection Calendar" />
-
-            <Label Style="{StaticResource LabelMainPageStyle}" Text="Week View Calendars" />
-            <Button
-                Clicked="WeekViewCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Single Week View Calendar" />
-            <Button
-                Clicked="TwoWeekViewCalendar"
-                Style="{StaticResource ButtonMainPageStyle}"
-                Text="Two Weeks View Calendar" />
+                Text="{Binding Text}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

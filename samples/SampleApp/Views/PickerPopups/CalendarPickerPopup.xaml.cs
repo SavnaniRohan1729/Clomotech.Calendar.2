@@ -1,34 +1,47 @@
-﻿using Mopups.Pages;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 namespace SampleApp.Views;
 
-
-public partial class CalendarPickerPopup : PopupPage
+public partial class CalendarPickerPopup : Popup
 {
-    readonly Action<CalendarPickerResult> onClosedPopup;
+	readonly Action<CalendarPickerResult> onClosedPopup;
 
-    public CalendarPickerPopup(Action<CalendarPickerResult> onClosedPopup)
-    {
+	public CalendarPickerPopup(Action<CalendarPickerResult> onClosedPopup)
+	{
 		this.onClosedPopup = onClosedPopup;
-        InitializeComponent();
-    }
+		InitializeComponent();
+		this.Opened += UponOpened;
+		this.Closed += UponClosed;
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
+		if (BindingContext is CalendarPickerPopupViewModel vm)
+		{
+			// Set reference to this popup
+			vm.ParentPopup = this;
 
-        if (BindingContext is CalendarPickerPopupViewModel vm)
-        {
-            vm.Closed += onClosedPopup;
-        }
-    }
+			// Or subscribe to the closure event
+			vm.PopupClosureRequested += (sender, result) =>
+			{
+				Device.BeginInvokeOnMainThread(async () =>
+				{
+					await this.CloseAsync(result);
+				});
+			};
+		}
+	}
 
-    protected override void OnDisappearing()
-    {
-        if (BindingContext is CalendarPickerPopupViewModel vm)
-        {
-            vm.Closed -= onClosedPopup;
-        }
+	public void UponClosed(object sender, PopupClosedEventArgs e)
+	{
+		if (BindingContext is CalendarPickerPopupViewModel vm)
+		{
+			vm.Closed -= onClosedPopup;
+		}
+	}
 
-        base.OnDisappearing();
-    }
+	public void UponOpened(object sender, EventArgs e)
+	{
+		if (BindingContext is CalendarPickerPopupViewModel vm)
+		{
+			vm.Closed += onClosedPopup;
+		}
+	}
 }
