@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Globalization;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -59,6 +60,8 @@ public partial class Calendar : ContentView, IDisposable
 		ShowHideCalendarCommand = new Command(ToggleCalendarSectionVisibility);
 
 		InitializeComponent();
+		daysPicker.ItemsSource = DaysList;
+
 
 		InitializeViewLayoutEngine();
 		InitializeSelectionType();
@@ -70,7 +73,11 @@ public partial class Calendar : ContentView, IDisposable
 
 		calendarSectionAnimateHide = new Lazy<Animation>(() => new Animation(AnimateMonths, 1, 0));
 		calendarSectionAnimateShow = new Lazy<Animation>(() => new Animation(AnimateMonths, 0, 1));
+		daysPicker.SelectedItem = Preferences.Get("FirstDayOfWeek", string.Empty);
+		SelectFirstDayOfWeek();
 	}
+
+	
 	#endregion
 
 
@@ -2081,6 +2088,7 @@ public partial class Calendar : ContentView, IDisposable
 
 		foreach (var dayLabel in daysControl.Children.OfType<Label>())
 		{
+			dayLabel.FontSize = 14;
 			var abberivatedDayName = Culture.DateTimeFormat.AbbreviatedDayNames[dayNumber];
 			var titleText = DaysTitleLabelFirstUpperRestLower
 							? abberivatedDayName[..1].ToUpperInvariant() + abberivatedDayName[1..].ToLowerInvariant()
@@ -2392,6 +2400,33 @@ public partial class Calendar : ContentView, IDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	
+	public List<string> DaysList { get; } = Enum.GetValues(typeof(DayOfWeek))
+                .Cast<DayOfWeek>()
+                .Select(d => d.ToString())
+                .ToList();
+
+	void GetDaysName(object sender, EventArgs e)
+	{
+		SelectFirstDayOfWeek();
+		Preferences.Set("FirstDayOfWeek", FirstDayOfWeek.ToString());	
+	}
+
+	void SelectFirstDayOfWeek()
+	{
+		FirstDayOfWeek = daysPicker.SelectedItem switch
+		{
+			string day when string.Equals(day, Culture.DateTimeFormat.GetDayName(DayOfWeek.Sunday), StringComparison.CurrentCultureIgnoreCase) => DayOfWeek.Sunday,
+			string day when string.Equals(day, Culture.DateTimeFormat.GetDayName(DayOfWeek.Monday), StringComparison.CurrentCultureIgnoreCase) => DayOfWeek.Monday,
+			string day when string.Equals(day, Culture.DateTimeFormat.GetDayName(DayOfWeek.Tuesday), StringComparison.CurrentCultureIgnoreCase) => DayOfWeek.Tuesday,
+			string day when string.Equals(day, Culture.DateTimeFormat.GetDayName(DayOfWeek.Wednesday), StringComparison.CurrentCultureIgnoreCase) => DayOfWeek.Wednesday,
+			string day when string.Equals(day, Culture.DateTimeFormat.GetDayName(DayOfWeek.Thursday), StringComparison.CurrentCultureIgnoreCase) => DayOfWeek.Thursday,
+			string day when string.Equals(day, Culture.DateTimeFormat.GetDayName(DayOfWeek.Friday), StringComparison.CurrentCultureIgnoreCase) => DayOfWeek.Friday,
+			string day when string.Equals(day, Culture.DateTimeFormat.GetDayName(DayOfWeek.Saturday), StringComparison.CurrentCultureIgnoreCase) => DayOfWeek.Saturday,
+			_ => throw new NotImplementedException()
+		};
 	}
 
 	#endregion
