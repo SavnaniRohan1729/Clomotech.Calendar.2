@@ -17,11 +17,10 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 
-		<!-- NuGet -->
+		<!-- NuGet --><!--
 		<Authors>yurkinh</Authors>
 		<Copyright>Copyright © yurkinh and contributors</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageVersion>2.0.3</PackageVersion>
 		<IsPackable>True</IsPackable>
 		<PackageProjectUrl>https://github.com/yurkinh/Plugin.Maui.Calendar</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/yurkinh/Plugin.Maui.Calendar</RepositoryUrl>
@@ -39,7 +38,8 @@
 		<PackageIcon>nuget.png</PackageIcon>
 		<PackageReleaseNotes>
 		                    * Fixed indicators not updated on events added                     				
-    </PackageReleaseNotes>
+    </PackageReleaseNotes>-->
+		<PackageVersion>2.0.3</PackageVersion>
 	</PropertyGroup>	
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-ios|AnyCPU'">
@@ -63,7 +63,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Shared\Models\" />
-	  <Folder Include="Shared\Converters\" />
 	</ItemGroup>
 	<!-- Package additions -->
 	<ItemGroup>

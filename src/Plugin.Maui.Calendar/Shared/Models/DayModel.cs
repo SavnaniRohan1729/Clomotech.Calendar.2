@@ -89,6 +89,10 @@ sealed partial class DayModel : ObservableObject
 	Color selectedBackgroundColor = Color.FromArgb("#2196F3");
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(OutlineColor))]
+	Color selectedOutlineColor = Color.FromArgb("#4C9195");
+
+	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(BackgroundColor))]
 	Color deselectedBackgroundColor = Colors.Transparent;
 
@@ -128,11 +132,11 @@ sealed partial class DayModel : ObservableObject
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(TextColor))]
-	Color todayTextColor = Colors.Transparent;
+	Color todayTextColor = Colors.Black;
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(BackgroundColor))]
-	Color todayFillColor = Colors.Transparent;
+	Color todayFillColor = Colors.Brown;
 
 	[ObservableProperty]
 	Color disabledColor = Color.FromArgb("#ECECEC");
@@ -143,7 +147,7 @@ sealed partial class DayModel : ObservableObject
 
 	public Color BackgroundFullEventColor => HasEvents && EventIndicatorType == EventIndicatorType.BackgroundFull ? EventIndicatorColor : Colors.Transparent;
 
-	public Color OutlineColor => IsToday && !IsSelected ? TodayOutlineColor : Colors.Transparent;
+    public Color OutlineColor => IsSelected ? SelectedOutlineColor : (IsToday ? TodayOutlineColor : Colors.Transparent);
 
 	public Color BackgroundColor
 	{

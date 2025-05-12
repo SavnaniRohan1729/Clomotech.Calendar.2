@@ -5,6 +5,10 @@ VisualStudioVersion = 17.13.35919.96 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Maui.Calendar", "Plugin.Maui.Calendar.csproj", "{585C30A4-E60E-F55B-2358-DBF6596853E0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Net8Calendar", "..\..\..\..\DewijkLearningMAUI\Net8Calendar\Net8Calendar.csproj", "{BDE908F9-604A-4051-98CC-B46B5247ED79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Net8DatePicker", "..\..\..\..\DewijkLearningMAUI\Net8DatePicker\Net8DatePicker.csproj", "{EBC3127C-C080-4EAD-B550-952F8F413754}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,18 @@ Global
 		{585C30A4-E60E-F55B-2358-DBF6596853E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{585C30A4-E60E-F55B-2358-DBF6596853E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{585C30A4-E60E-F55B-2358-DBF6596853E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDE908F9-604A-4051-98CC-B46B5247ED79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDE908F9-604A-4051-98CC-B46B5247ED79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDE908F9-604A-4051-98CC-B46B5247ED79}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{BDE908F9-604A-4051-98CC-B46B5247ED79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDE908F9-604A-4051-98CC-B46B5247ED79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDE908F9-604A-4051-98CC-B46B5247ED79}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{EBC3127C-C080-4EAD-B550-952F8F413754}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBC3127C-C080-4EAD-B550-952F8F413754}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBC3127C-C080-4EAD-B550-952F8F413754}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{EBC3127C-C080-4EAD-B550-952F8F413754}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBC3127C-C080-4EAD-B550-952F8F413754}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBC3127C-C080-4EAD-B550-952F8F413754}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Globalization;
+using System.Windows.Input;
 using Plugin.Maui.Calendar.Models;
 
 namespace Plugin.Maui.Calendar.Controls.ViewLayoutEngines;
@@ -26,13 +27,16 @@ abstract class ViewLayoutBase(DayOfWeek firstDayOfWeek)
 		var grid = new Grid
 		{
 			ColumnSpacing = 0d,
-			RowSpacing = 6d,
+			RowSpacing = 3d,
 			RowDefinitions =
 			[
 				rowDefinition,
 			],
 			ColumnDefinitions =
 			{
+				// Week number column
+				new ColumnDefinition(){ Width = GridLength.Star },
+				// Day columns
 				new ColumnDefinition(){ Width = GridLength.Star},
 				new ColumnDefinition(){ Width = GridLength.Star},
 				new ColumnDefinition(){ Width = GridLength.Star},
@@ -52,7 +56,7 @@ abstract class ViewLayoutBase(DayOfWeek firstDayOfWeek)
 			};
 			label.SetBinding(VisualElement.StyleProperty, daysTitleLabelStyleeBindingName);
 
-			grid.Add(label, i, 0);
+			grid.Add(label, i + 1, 0);
 		}
 
 		dayViews.Clear();
@@ -62,6 +66,13 @@ abstract class ViewLayoutBase(DayOfWeek firstDayOfWeek)
 			rowDefinition = new RowDefinition();
 			grid.RowDefinitions.Add(rowDefinition);
 
+			var weekLabel = new Label
+			{
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center
+			};
+			grid.Add(weekLabel, 0, i);
+
 			for (int ii = 0; ii < 7; ii++)
 			{
 				var dayView = new DayView();
@@ -70,7 +81,7 @@ abstract class ViewLayoutBase(DayOfWeek firstDayOfWeek)
 				dayModel.DayTappedCommand = dayTappedCommand;
 
 				dayViews.Add(dayView);
-				grid.Add(dayView, ii, i);
+				grid.Add(dayView, ii + 1, i);
 			}
 		}
 

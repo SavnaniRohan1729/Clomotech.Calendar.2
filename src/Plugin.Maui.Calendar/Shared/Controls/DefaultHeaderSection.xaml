@@ -1,35 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Plugin.Maui.Calendar.Controls.DefaultHeaderSection"
-             xmlns:controls="clr-namespace:Plugin.Maui.Calendar.Controls"
-             x:DataType="controls:Calendar">
-    <VerticalStackLayout
+<ContentView
+    x:Class="Plugin.Maui.Calendar.Controls.DefaultHeaderSection"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:Plugin.Maui.Calendar.Controls"
+    x:DataType="controls:Calendar">
+    <!--<HorizontalStackLayout
         Spacing="6"
-        Grid.Row="0"
         HorizontalOptions="Fill"
-        VerticalOptions="Fill">
-        <Grid
-            RowSpacing="6"
-            HorizontalOptions="Fill"
-            IsVisible="{Binding ShowMonthPicker}"
-            VerticalOptions="Start"
-            RowDefinitions="Auto"
-            ColumnDefinitions="*,Auto,*">
-            <Button
-                Grid.Column="0"
-                Style="{Binding PreviousMonthArrowButtonStyle}"
-                Command="{Binding PrevLayoutUnitCommand}"/>
-            <Label
-                Grid.Column="1"
-                Style="{Binding MonthLabelStyle}"
-                Text="{Binding LayoutUnitText}"/>
-            <Button
-                Grid.Column="2"
-                Style="{Binding NextMonthArrowButtonStyle}"
-                Command="{Binding NextLayoutUnitCommand}"/>
-        </Grid>
-        <Grid
+        BackgroundColor="Yellow"
+        VerticalOptions="Fill">-->
+    <Grid
+        ColumnDefinitions="0.9*,0.2*"
+        HorizontalOptions="Fill"
+        IsVisible="{Binding ShowMonthPicker}"
+        RowDefinitions="Auto"
+        VerticalOptions="Start">
+        <Label
+            Grid.Column="0"
+            IsEnabled="{Binding IsMonthYearLabelEnabled}"
+            Style="{Binding MonthLabelStyle}"
+            Text="{Binding LayoutUnitText}">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding OnMonthYearCommand}" />
+            </Label.GestureRecognizers>
+        </Label>
+        <HorizontalStackLayout
+            Grid.Column="1"
+            HorizontalOptions="Start"
+            Spacing="10">
+            <Button Command="{Binding PrevLayoutUnitCommand}" Style="{Binding PreviousMonthArrowButtonStyle}" />
+            <Button Command="{Binding NextLayoutUnitCommand}" Style="{Binding NextMonthArrowButtonStyle}" />
+        </HorizontalStackLayout>
+    </Grid>
+    <!--<Grid
             HorizontalOptions="Fill"
             IsVisible="{Binding ShowYearPicker}"
             VerticalOptions="Start"
@@ -48,7 +52,7 @@
                 Grid.Column="2"
                 Style="{Binding NextYearArrowButtonStyle}"
                 Command="{Binding NextYearCommand}"/>
-        </Grid>
-    </VerticalStackLayout>
+        </Grid>-->
+    <!--</HorizontalStackLayout>-->
 </ContentView>
 

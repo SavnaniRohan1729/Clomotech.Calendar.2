@@ -1,6 +1,8 @@
 ﻿using System.Collections;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
+using System.Xml.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using Plugin.Maui.Calendar.Controls.Interfaces;
 using Plugin.Maui.Calendar.Controls.SelectionEngines;
@@ -57,8 +59,14 @@ public partial class Calendar : ContentView, IDisposable
 		PrevYearCommand = new Command(PrevYear);
 		NextYearCommand = new Command(NextYear);
 		ShowHideCalendarCommand = new Command(ToggleCalendarSectionVisibility);
+		OnMonthYearCommand = new Command(OnMonthYearTapped);
+		OnMonthTappedCommand = new Command(OnMonthTapped);
 
 		InitializeComponent();
+		YearCollection.BindingContext = this;
+		MonthCollection.BindingContext = this;
+		MonthYearView.BindingContext = this;
+		YearItems = new ObservableCollection<YearItem>();
 
 		InitializeViewLayoutEngine();
 		InitializeSelectionType();
@@ -71,6 +79,7 @@ public partial class Calendar : ContentView, IDisposable
 		calendarSectionAnimateHide = new Lazy<Animation>(() => new Animation(AnimateMonths, 1, 0));
 		calendarSectionAnimateShow = new Lazy<Animation>(() => new Animation(AnimateMonths, 0, 1));
 	}
+
 	#endregion
 
 
@@ -273,6 +282,7 @@ public partial class Calendar : ContentView, IDisposable
 
 			calendar.UpdateLayoutUnitLabel();
 			calendar.UpdateDays(true);
+			calendar.UpdateWeekButton();
 
 			calendar.OnShownDateChangedCommand?.Execute(calendar.ShownDate);
 		}
@@ -360,19 +370,20 @@ public partial class Calendar : ContentView, IDisposable
 	}
 
 
-	static void OnCultureChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		if (bindable is Calendar calendar)
-		{
-			if (calendar.ShownDate.Month > 0)
-			{
-				calendar.UpdateLayoutUnitLabel();
-			}
-
-			calendar.UpdateSelectedDateLabel();
-			calendar.UpdateDayTitles();
-		}
-	}
+    static void OnCultureChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is Calendar calendar && newValue is CultureInfo newCulture)
+        {
+            if (calendar.ShownDate.Month > 0)
+            {
+                calendar.UpdateLayoutUnitLabel();
+            }
+            //calendar.Months = newCulture.DateTimeFormat.MonthNames.Take(12).ToList();
+            calendar.UpdateSelectedDateLabel();
+            calendar.UpdateDayTitles();
+            calendar.UpdateWeekButton();
+        }
+    }
 
 
 	/// <summary>
@@ -614,6 +625,7 @@ public partial class Calendar : ContentView, IDisposable
 
 			calendar.UpdateSelectedDateLabel();
 			calendar.UpdateDayTitles();
+			calendar.UpdateWeekButton();
 			calendar.RenderLayout();
 		}
 	}
@@ -1409,7 +1421,7 @@ public partial class Calendar : ContentView, IDisposable
 		nameof(TodayFillColor),
 		typeof(Color),
 		typeof(Calendar),
-		Colors.Transparent,
+		Colors.Brown,
 		propertyChanged: OnTodayFillColorChanged
 	);
 
@@ -1738,6 +1750,23 @@ public partial class Calendar : ContentView, IDisposable
 		set => SetValue(SelectedDayBackgroundColorProperty, value);
 	}
 
+	public static readonly BindableProperty SelectedDayOutlineColorProperty = BindableProperty.Create(
+			nameof(SelectedDayOutlineColor),
+			typeof(Color),
+			typeof(Calendar),
+			Color.FromArgb("#4C9195"),
+			propertyChanged: OnSelectedDayBackgroundColorChanged
+		);
+
+	/// <summary>
+	/// Specifies the background color of selected days
+	/// </summary>
+	public Color SelectedDayOutlineColor
+	{
+		get => (Color)GetValue(SelectedDayOutlineColorProperty);
+		set => SetValue(SelectedDayOutlineColorProperty, value);
+	}
+
 	static void OnSelectedDayBackgroundColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (bindable is Calendar calendar)
@@ -1961,6 +1990,95 @@ public partial class Calendar : ContentView, IDisposable
 		get => (bool)GetValue(SwipeToChangeMonthEnabledProperty);
 		set => SetValue(SwipeToChangeMonthEnabledProperty, value);
 	}
+
+	public static readonly BindableProperty YearItemsProperty = BindableProperty.Create(
+	   nameof(YearItems),
+	   typeof(ObservableCollection<YearItem>),
+	   typeof(Calendar.YearItem)
+	);
+
+
+	public ObservableCollection<YearItem> YearItems
+	{
+		get => (ObservableCollection<YearItem>)GetValue(YearItemsProperty);
+		set => SetValue(YearItemsProperty, value);
+	}
+
+	public static readonly BindableProperty YearNameProperty = BindableProperty.Create(
+		nameof(YearName), typeof(string), typeof(Calendar), default(string));
+
+	public string YearName
+	{
+		get => (string)GetValue(YearNameProperty);
+		set => SetValue(YearNameProperty, value);
+	}
+
+	public static readonly BindableProperty IsYearSelectedProperty = BindableProperty.Create(
+		nameof(IsYearSelected), typeof(bool), typeof(Calendar), false);
+
+	public bool IsYearSelected
+	{
+		get => (bool)GetValue(IsSelectedProperty);
+		set => SetValue(IsSelectedProperty, value);
+	}
+
+	public static readonly BindableProperty MonthItemsProperty = BindableProperty.Create(
+       nameof(MonthItems),
+       typeof(ObservableCollection<MonthItem>),
+	   typeof(Calendar.MonthItem),
+	   defaultValueCreator: (bindable) => new ObservableCollection<MonthItem>(CreateDefaultMonthItems())
+    );
+
+ 
+    public ObservableCollection<MonthItem> MonthItems
+    {
+        get => (ObservableCollection<MonthItem>)GetValue(MonthItemsProperty);
+        set => SetValue(MonthItemsProperty, value);
+    }
+ 
+    static ObservableCollection<MonthItem> CreateDefaultMonthItems()
+    {
+        return new ObservableCollection<MonthItem>(
+            CultureInfo.InvariantCulture.DateTimeFormat.MonthNames
+                .Take(12)
+                .Select(month => new MonthItem
+                {
+                    Name = month.Substring(0, 3),
+                    IsSelected = false
+                })
+        );
+    }
+
+	public static readonly BindableProperty NameProperty = BindableProperty.Create(
+		nameof(Name), typeof(string), typeof(Calendar), default(string));
+
+	public string Name
+	{
+		get => (string)GetValue(NameProperty);
+		set => SetValue(NameProperty, value);
+	}
+
+	public static readonly BindableProperty IsSelectedProperty = BindableProperty.Create(
+		nameof(IsSelected), typeof(bool), typeof(Calendar), false);
+
+	public bool IsSelected
+	{
+		get => (bool)GetValue(IsSelectedProperty);
+		set => SetValue(IsSelectedProperty, value);
+	}
+
+	public static readonly BindableProperty IsMonthYearLabelEnabledProperty = BindableProperty.Create(
+		nameof(IsMonthYearLabelEnabled),
+		typeof(bool),
+		typeof(Calendar),
+		true
+	);
+	public bool IsMonthYearLabelEnabled
+	{
+		get => (bool)GetValue(IsMonthYearLabelEnabledProperty);
+		set => SetValue(IsMonthYearLabelEnabledProperty, value);
+	}
+
 	#endregion
 
 
@@ -2001,6 +2119,13 @@ public partial class Calendar : ContentView, IDisposable
 	/// </summary>
 	public ICommand ShowHideCalendarCommand { get; }
 
+    /// <summary>
+    /// Collection of years and months to display in the picker.
+    /// </summary>
+
+	public ICommand OnMonthYearCommand { get; }
+
+	public ICommand OnMonthTappedCommand { get; }
 
 	#endregion
 
@@ -2023,7 +2148,7 @@ public partial class Calendar : ContentView, IDisposable
 			return;
 		}
 
-		LayoutUnitText = Culture.DateTimeFormat.MonthNames[ShownDate.Month - 1].Capitalize();
+        LayoutUnitText = $"{Culture.DateTimeFormat.MonthNames[ShownDate.Month - 1]} {ShownDate.Year}";
 	}
 
 	void UpdateSelectedDateLabel() =>
@@ -2079,7 +2204,8 @@ public partial class Calendar : ContentView, IDisposable
 	{
 		var dayNumber = (int)FirstDayOfWeek;
 
-		foreach (var dayLabel in daysControl.Children.OfType<Label>())
+		foreach (var dayLabel in daysControl.Children.OfType<Label>().Where(l =>
+		Grid.GetColumn(l) > 0 && Grid.GetRow(l) == 0))
 		{
 			var abberivatedDayName = Culture.DateTimeFormat.AbbreviatedDayNames[dayNumber];
 			var titleText = DaysTitleLabelFirstUpperRestLower
@@ -2098,6 +2224,7 @@ public partial class Calendar : ContentView, IDisposable
 	}
 
 	DateTime firstDate = DateTime.MinValue;
+
 	void UpdateDays(bool forceUpdate = false)
 	{
 		if (!forceUpdate && firstDate == CurrentViewLayoutEngine.GetFirstDate(ShownDate))
@@ -2147,6 +2274,7 @@ public partial class Calendar : ContentView, IDisposable
 			dayModel.OtherMonthColor = OtherMonthDayColor;
 			dayModel.OtherMonthSelectedColor = OtherMonthSelectedDayColor;
 			dayModel.WeekendDayColor = WeekendDayColor;
+			dayModel.SelectedOutlineColor = SelectedDayOutlineColor;
 			dayModel.SelectedBackgroundColor = SelectedDayBackgroundColor;
 			dayModel.TodayOutlineColor = TodayOutlineColor;
 			dayModel.TodayFillColor = TodayFillColor;
@@ -2212,33 +2340,88 @@ public partial class Calendar : ContentView, IDisposable
 		);
 	}
 
-	void PrevUnit()
-	{
-		var oldMonth = DateOnly.FromDateTime(ShownDate);
-		ShownDate = CurrentViewLayoutEngine.GetPreviousUnit(ShownDate);
-		var newMonth = DateOnly.FromDateTime(ShownDate);
+    void PrevUnit()
+    {
+        if (int.TryParse(LayoutUnitText, out int currentYear))
+        {
+            int previousYear = currentYear - 1;
 
-		MonthChanged?.Invoke(this, new MonthChangedEventArgs(oldMonth, newMonth));
+            LayoutUnitText = previousYear.ToString();
 
-		if (MonthChangedCommand?.CanExecute(null) == true)
+            UpdateSelectedMonth();
+
+            return;
+        }
+		else if (LayoutUnitText.Contains("-"))  // Check if it's a decade range like "2020-2031"
 		{
-			MonthChangedCommand.Execute(new MonthChangedEventArgs(oldMonth, newMonth));
-		}
-	}
+			string[] parts = LayoutUnitText.Split('-');
+			if (parts.Length == 2 && int.TryParse(parts[0], out int startDecade))
+			{
+				int previousDecadeStart = ((startDecade / 10) - 1) * 10;
+				int previousDecadeEnd = previousDecadeStart + 11;
 
-	void NextUnit()
-	{
+				LayoutUnitText = $"{previousDecadeStart}-{previousDecadeEnd}";
+
+				YearItems.Clear();
+				UpdateSelectedYear(previousDecadeStart, previousDecadeEnd);
+
+				return;
+			}
+		}
+
+		// Normal month/week navigation
 		var oldMonth = DateOnly.FromDateTime(ShownDate);
-		ShownDate = CurrentViewLayoutEngine.GetNextUnit(ShownDate);
-		var newMonth = DateOnly.FromDateTime(ShownDate);
+        ShownDate = CurrentViewLayoutEngine.GetPreviousUnit(ShownDate);
+        var newMonth = DateOnly.FromDateTime(ShownDate);
 
-		MonthChanged?.Invoke(this, new MonthChangedEventArgs(oldMonth, newMonth));
+        MonthChanged?.Invoke(this, new MonthChangedEventArgs(oldMonth, newMonth));
 
-		if (MonthChangedCommand?.CanExecute(null) == true)
-		{
-			MonthChangedCommand.Execute(new MonthChangedEventArgs(oldMonth, newMonth));
-		}
-	}
+        if (MonthChangedCommand?.CanExecute(null) == true)
+        {
+            MonthChangedCommand.Execute(new MonthChangedEventArgs(oldMonth, newMonth));
+        }
+    }
+
+    void NextUnit()
+    {
+        if (int.TryParse(LayoutUnitText, out int currentYear))
+        {
+            int nextYear = currentYear + 1;
+
+            LayoutUnitText = nextYear.ToString();
+
+            UpdateSelectedMonth();
+
+            return;
+        }
+        else if (LayoutUnitText.Contains("-"))  // Check if it's a decade range like "2020-2031"
+        {
+            string[] parts = LayoutUnitText.Split('-');
+            if (parts.Length == 2 && int.TryParse(parts[1], out int endDecade))
+            {
+                int nextDecadeStart = (((endDecade - 2) / 10) + 1) * 10;
+                int nextDecadeEnd = nextDecadeStart + 11;
+
+                LayoutUnitText = $"{nextDecadeStart}-{nextDecadeEnd}";
+
+                YearItems.Clear();
+                UpdateSelectedYear(nextDecadeStart, nextDecadeEnd);
+
+                return;
+            }
+        }
+
+        var oldMonth = DateOnly.FromDateTime(ShownDate);
+        ShownDate = CurrentViewLayoutEngine.GetNextUnit(ShownDate);
+        var newMonth = DateOnly.FromDateTime(ShownDate);
+
+        MonthChanged?.Invoke(this, new MonthChangedEventArgs(oldMonth, newMonth));
+
+        if (MonthChangedCommand?.CanExecute(null) == true)
+        {
+            MonthChangedCommand.Execute(new MonthChangedEventArgs(oldMonth, newMonth));
+        }
+    }
 
 	void NextYear(object obj)
 	{
@@ -2293,9 +2476,6 @@ public partial class Calendar : ContentView, IDisposable
 
 	void OnSwipeDown() => SwipedDown?.Invoke(this, EventArgs.Empty);
 
-
-
-
 	public void InitializeViewLayoutEngine()
 	{
 		CurrentViewLayoutEngine = new MonthViewEngine(FirstDayOfWeek);
@@ -2332,6 +2512,7 @@ public partial class Calendar : ContentView, IDisposable
 		UpdateDaysColors();
 		UpdateDayTitles();
 		UpdateDays();
+		UpdateWeekButton();
 
 		calendarContainer.Add(daysControl);
 	}
@@ -2394,5 +2575,205 @@ public partial class Calendar : ContentView, IDisposable
 		GC.SuppressFinalize(this);
 	}
 
+	void UpdateWeekButton()
+	{
+		var firstDateInRow = CurrentViewLayoutEngine.GetFirstDate(ShownDate);
+		var weekNumber = GetWeekNumber(firstDateInRow);
+		var weekLabelCount = daysControl.Children.OfType<Label>().Where(l =>
+		Grid.GetColumn(l) == 0 && Grid.GetRow(l) > 0).ToList();
+
+		// Find all labels in column 0 (week number column) that are not in row 0 (day title row)
+		foreach (var weekLabel in daysControl.Children.OfType<Label>().Where(l =>
+		Grid.GetColumn(l) == 0 && Grid.GetRow(l) > 0))
+		{
+			weekLabel.Text = $"W{weekNumber}";
+			weekLabel.FontSize = 14;
+
+			// Style for week number labels
+			weekLabel.TextColor = Colors.Black;
+
+			// Update the week number for the next row
+			firstDateInRow = firstDateInRow.AddDays(7);
+			weekNumber = GetWeekNumber(firstDateInRow);
+		}
+	}
+
+	void OnYear_Tapped(object sender, TappedEventArgs e)
+	{
+		if (sender is Border border && border.Content is Label label && label.Text != null)
+		{
+			// Hide YearCollection and show MonthCollection
+			YearCollection.IsVisible = false;
+			MonthCollection.IsVisible = true;
+			IsMonthYearLabelEnabled = true;
+			LayoutUnitText = label.Text;
+			UpdateSelectedMonth();
+
+			// Optionally, you can use the tapped year (label.Text) for further logic
+			Console.WriteLine($"Year tapped: {label.Text}");
+		}
+	}
+
+
+	void OnMonthYearTapped(object obj)
+	{
+        if (LayoutUnitText == $"{Culture.DateTimeFormat.MonthNames[ShownDate.Month - 1]} {ShownDate.Year}")
+        {
+            MonthYearView.IsVisible = true;
+            MonthCollection.IsVisible = true;
+            YearCollection.IsVisible = false;
+            calendarContainer.IsVisible = false;
+
+            LayoutUnitText = ShownDate.Year.ToString();
+
+            UpdateSelectedMonth();
+		}
+		else if (LayoutUnitText == ShownDate.Year.ToString())
+		{
+			calendarContainer.IsVisible = false;
+			MonthYearView.IsVisible = true;
+			MonthCollection.IsVisible = false;
+			YearCollection.IsVisible = true;
+
+			int startDecade = (ShownDate.Year / 10) * 10;
+			int endDecade = startDecade + 11;
+			UpdateSelectedYear(startDecade, endDecade);
+			LayoutUnitText = $"{startDecade}-{endDecade}";
+			IsMonthYearLabelEnabled = false;
+		}
+	}
+
+	void UpdateSelectedYear(int startDecade, int endDecade)
+	{
+		YearItems.Clear();
+		for (int i = startDecade; i <= endDecade; i++)
+		{
+			YearItems.Add(new YearItem
+			{
+				YearName = i.ToString(),
+				IsYearSelected = i == SelectedDate?.Year
+			});
+		}
+	}
+
+	public void UpdateSelectedMonth()
+	{
+		int selectedMonthIndex = -1;
+
+        if (SelectedDate.HasValue && SelectedDate.Value.Year.ToString() == LayoutUnitText)
+		{
+			selectedMonthIndex = SelectedDate.Value.Month - 1; // Month is 1-based, index is 0-based
+		}
+
+		var monthItems = MonthItems.ToList();
+
+		for (int i = 0; i < monthItems.Count; i++)
+		{
+			if (monthItems[i] is MonthItem existingItem)
+			{
+				existingItem.IsSelected = (i == selectedMonthIndex);
+			}
+			else
+			{
+				monthItems[i] = new MonthItem
+				{
+					Name = monthItems[i].Name,
+					IsSelected = (i == selectedMonthIndex)
+				};
+			}
+		}
+
+		MonthItems = new ObservableCollection<MonthItem>(monthItems);
+	}
+
+	void OnMonthTapped(object obj)
+	{
+	}
+
+
+
 	#endregion
+
+	public partial class MonthItem : BindableObject
+	{
+		public static readonly BindableProperty NameProperty = BindableProperty.Create(
+			nameof(Name), typeof(string), typeof(MonthItem), default(string));
+
+		public static readonly BindableProperty IsSelectedProperty = BindableProperty.Create(
+			nameof(IsSelected), typeof(bool), typeof(MonthItem), false);
+
+		public string Name
+		{
+			get => (string)GetValue(NameProperty);
+			set => SetValue(NameProperty, value);
+		}
+
+		public bool IsSelected
+		{
+			get => (bool)GetValue(IsSelectedProperty);
+			set => SetValue(IsSelectedProperty, value);
+		}
+	}
+
+    void OnMonth_Tapped(object sender, TappedEventArgs e)
+    {
+        MonthYearView.IsVisible = false;
+        YearCollection.IsVisible = false;
+        MonthCollection.IsVisible = false;
+        calendarContainer.IsVisible = true;
+
+        if (sender is Border border && border.Content is Label label && label.Text != null)
+        {
+            string abbreviatedMonthName = label.Text;
+            int year = int.Parse(LayoutUnitText);
+
+            // Find the month index by comparing the abbreviated name with the month names
+            int monthIndex = -1;
+            string[] monthNames = Culture.DateTimeFormat.MonthNames;
+
+            for (int i = 0; i < monthNames.Length; i++)
+            {
+                if (monthNames[i].Length >= 3 &&
+                    monthNames[i].Substring(0, 3).Equals(abbreviatedMonthName, StringComparison.OrdinalIgnoreCase))
+                {
+                    monthIndex = i;
+                    break;
+                }
+            }
+
+            // If we found a matching month
+            if (monthIndex >= 0)
+            {
+                // Set the full month name + year in LayoutUnitText
+                LayoutUnitText = $"{Culture.DateTimeFormat.MonthNames[monthIndex]} {year}";
+
+                // Set ShownDate to the first day of the selected month
+                ShownDate = new DateTime(year, monthIndex + 1, 1);
+            }
+        }
+    }
+
+	public partial class YearItem : BindableObject
+	{
+		public static readonly BindableProperty YearNameProperty = BindableProperty.Create(
+			nameof(YearName), typeof(string), typeof(YearItem), default(string));
+
+		public static readonly BindableProperty IsYearSelectedProperty = BindableProperty.Create(
+			nameof(IsYearSelected), typeof(bool), typeof(MonthItem), false);
+
+		public string YearName
+		{
+			get => (string)GetValue(YearNameProperty);
+			set => SetValue(YearNameProperty, value);
+		}
+
+		public bool IsYearSelected
+		{
+			get => (bool)GetValue(IsYearSelectedProperty);
+			set => SetValue(IsYearSelectedProperty, value);
+		}
+	}
 }
+
+
+// month class
